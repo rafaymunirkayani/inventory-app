@@ -1,7 +1,5 @@
 package inventoryapp;
 
-
-
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE admin (username TEXT PRIMARY KEY, password TEXT)");
         db.execSQL("CREATE TABLE user (username TEXT PRIMARY KEY, password TEXT)");
         db.execSQL("CREATE TABLE equipment (id TEXT PRIMARY KEY, name TEXT)");
-        db.execSQL("CREATE TABLE issued (username TEXT, equipment_id TEXT, issue_date TEXT, return_date TEXT)");
+        db.execSQL("CREATE TABLE issued (username TEXT, equipment_id TEXT, issue_date TEXT)");
     }
 
     @Override
@@ -85,38 +83,32 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // Issue equipment
+// Issue equipment
     public boolean issueEquipment(String username, String equipmentId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("username", username);
         values.put("equipment_id", equipmentId);
-        values.put("issue_date", System.currentTimeMillis());
+        values.put("issue_date", System.currentTimeMillis()); // Adjusted to include issue date
         long result = db.insert("issued", null, values);
         return result != -1;
     }
 
-    // Return equipment
-    public boolean returnEquipment(String username, String equipmentId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("return_date", System.currentTimeMillis());
-        int result = db.update("issued", values, "username=? AND equipment_id=?", new String[]{username, equipmentId});
-        return result > 0;
-    }
 
-    // Get issued equipment
+    // Get issued equipment with usernames from user table
     public List<IssuedEquipment> getIssuedEquipments() {
         List<IssuedEquipment> issuedEquipments = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM issued", null);
+        Cursor cursor = db.rawQuery("SELECT u.username, i.equipment_id, i.issue_date " +
+                "FROM issued i " +
+                "INNER JOIN user u ON i.username = u.username", null);
         if (cursor.moveToFirst()) {
             do {
-                @SuppressLint("Range") String username = cursor.getString(cursor.getColumnIndex("username"));
-                @SuppressLint("Range") String equipmentId = cursor.getString(cursor.getColumnIndex("equipment_id"));
-                @SuppressLint("Range") String issueDate = cursor.getString(cursor.getColumnIndex("issue_date"));
-                @SuppressLint("Range") String returnDate = cursor.getString(cursor.getColumnIndex("return_date"));
+                String username = cursor.getString(cursor.getColumnIndex("username"));
+                String equipmentId = cursor.getString(cursor.getColumnIndex("equipment_id"));
+                String issueDate = cursor.getString(cursor.getColumnIndex("issue_date"));
 
-                IssuedEquipment equipment = new IssuedEquipment(username, equipmentId, issueDate, returnDate);
+                IssuedEquipment equipment = new IssuedEquipment(username, equipmentId, issueDate);
                 issuedEquipments.add(equipment);
             } while (cursor.moveToNext());
         }
@@ -125,12 +117,14 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+
+
     // Get available equipment
     @SuppressLint("Range")
     public List<String> getAvailableEquipments() {
         List<String> availableEquipments = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT id, name FROM equipment WHERE id NOT IN (SELECT equipment_id FROM issued WHERE return_date IS NULL)", null);
+        Cursor cursor = db.rawQuery("SELECT id, name FROM equipment WHERE id NOT IN (SELECT equipment_id FROM issued)", null);
         if (cursor.moveToFirst()) {
             do {
                 availableEquipments.add(cursor.getString(cursor.getColumnIndex("name")) + " (ID: " + cursor.getString(cursor.getColumnIndex("id")) + ")");

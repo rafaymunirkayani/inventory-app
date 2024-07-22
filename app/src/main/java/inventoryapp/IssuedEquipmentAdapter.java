@@ -1,6 +1,5 @@
 package inventoryapp;
 
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +9,8 @@ import android.widget.TextView;
 
 import com.example.myapplication.R;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class IssuedEquipmentAdapter extends BaseAdapter {
@@ -38,23 +39,35 @@ public class IssuedEquipmentAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
+
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.issued_equipment_item, parent, false);
+            holder = new ViewHolder();
+            holder.usernameTextView = convertView.findViewById(R.id.usernameTextView);
+            holder.equipmentIdTextView = convertView.findViewById(R.id.equipmentIdTextView);
+            holder.issueDateTextView = convertView.findViewById(R.id.issueDateTextView);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
         }
 
         IssuedEquipment issuedEquipment = issuedEquipments.get(position);
 
-        TextView usernameTextView = convertView.findViewById(R.id.usernameTextView);
-        TextView equipmentIdTextView = convertView.findViewById(R.id.equipmentIdTextView);
-        TextView issueDateTextView = convertView.findViewById(R.id.issueDateTextView);
-        TextView returnDateTextView = convertView.findViewById(R.id.returnDateTextView);
+        holder.usernameTextView.setText("User: " + issuedEquipment.getUsername());
+        holder.equipmentIdTextView.setText("Equipment ID: " + issuedEquipment.getEquipmentId());
 
-        usernameTextView.setText("User: " + issuedEquipment.getUsername());
-        equipmentIdTextView.setText("Equipment ID: " + issuedEquipment.getEquipmentId());
-        issueDateTextView.setText("Issue Date: " + issuedEquipment.getIssueDate());
-        returnDateTextView.setText("Return Date: " + issuedEquipment.getReturnDate());
+        // Convert issueDate from timestamp to readable format
+        long timestamp = Long.parseLong(issuedEquipment.getIssueDate());
+        String issueDateStr = DateFormat.getDateTimeInstance().format(new Date(timestamp));
+        holder.issueDateTextView.setText("Issue Date: " + issueDateStr);
 
         return convertView;
     }
 
+    static class ViewHolder {
+        TextView usernameTextView;
+        TextView equipmentIdTextView;
+        TextView issueDateTextView;
+    }
 }

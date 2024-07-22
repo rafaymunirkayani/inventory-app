@@ -18,5 +18,8 @@
         android:id="@+id/addEquipmentButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Equipment" />
+        android:text="Add Equipment"
+        android:background="@drawable/rounded_button"
+        android:textColor="#FFFFFF"
+        />
 </LinearLayout>
