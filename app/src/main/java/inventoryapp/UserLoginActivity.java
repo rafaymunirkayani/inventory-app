@@ -1,6 +1,5 @@
+// UserLoginActivity.java
 package inventoryapp;
-
-
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,13 +31,17 @@ public class UserLoginActivity extends AppCompatActivity {
                 String password = userPassword.getText().toString();
 
                 if (dbHelper.checkUserCredentials(username, password)) {
+                    String userId = dbHelper.getUserId(username);
                     Intent intent = new Intent(UserLoginActivity.this, UserDashboardActivity.class);
+                    intent.putExtra("username", username);
+                    intent.putExtra("userId", userId);
                     startActivity(intent);
                 } else {
                     Toast.makeText(UserLoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
         findViewById(R.id.usercreate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

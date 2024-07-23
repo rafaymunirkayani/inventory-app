@@ -1,5 +1,5 @@
+// UserDashboardActivity.java
 package inventoryapp;
-
 
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +16,7 @@ public class UserDashboardActivity extends AppCompatActivity {
     private Spinner equipmentSpinner;
     private DBHelper dbHelper;
     private String username;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +32,13 @@ public class UserDashboardActivity extends AppCompatActivity {
         equipmentSpinner.setAdapter(adapter);
 
         username = getIntent().getStringExtra("username");
+        userId = getIntent().getStringExtra("userId");
 
         findViewById(R.id.issueEquipmentButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String equipment = equipmentSpinner.getSelectedItem().toString();
-                if (dbHelper.issueEquipment(username, equipment)) {
+                if (dbHelper.issueEquipment(username, userId, equipment)) {
                     Toast.makeText(UserDashboardActivity.this, "Equipment issued successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {

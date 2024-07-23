@@ -1,10 +1,8 @@
+// CreateUserAccountActivity.java
 package inventoryapp;
 
-
-
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,9 +13,10 @@ import com.example.myapplication.R;
 public class CreateUserAccountActivity extends AppCompatActivity {
     private EditText userUsername;
     private EditText userPassword;
+    private EditText userId;
     private DBHelper dbHelper;
+    private static final String TAG = "CreateUserAccount";
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +24,7 @@ public class CreateUserAccountActivity extends AppCompatActivity {
 
         userUsername = findViewById(R.id.userUsername);
         userPassword = findViewById(R.id.userPassword);
+        userId = findViewById(R.id.userId);
         dbHelper = new DBHelper(this);
 
         findViewById(R.id.createUserAccountButton).setOnClickListener(new View.OnClickListener() {
@@ -32,14 +32,21 @@ public class CreateUserAccountActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String username = userUsername.getText().toString();
                 String password = userPassword.getText().toString();
+                String id = userId.getText().toString();
 
-                if (dbHelper.addUser(username, password)) {
-                    Toast.makeText(CreateUserAccountActivity.this, "User account created successfully", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(CreateUserAccountActivity.this, UserLoginActivity.class); // Replace with your UserLoginActivity
-                    startActivity(intent);
-                    finish();
+                Log.d(TAG, "Create button clicked with: " +
+                        "username=" + username + ", password=" + password + ", userId=" + id);
+
+                if (username.isEmpty() || password.isEmpty() || id.isEmpty()) {
+                    Toast.makeText(CreateUserAccountActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(CreateUserAccountActivity.this, "Error creating user account", Toast.LENGTH_SHORT).show();
+                    boolean isSuccess = dbHelper.addUser(username, password, id);
+                    if (isSuccess) {
+                        Toast.makeText(CreateUserAccountActivity.this, "Account created successfully", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(CreateUserAccountActivity.this, "Error creating account", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });

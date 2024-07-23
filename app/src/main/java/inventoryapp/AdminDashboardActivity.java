@@ -1,3 +1,4 @@
+// AdminDashboardActivity.java
 package inventoryapp;
 
 import android.content.Intent;

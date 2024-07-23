@@ -1,4 +1,7 @@
+// DBHelper.java
 package inventoryapp;
+
+import static androidx.fragment.app.FragmentManager.TAG;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -6,12 +9,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "inventory.db";
+    private static final String DATABASE_NAME = "iinventory.db";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -20,9 +24,9 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE admin (username TEXT PRIMARY KEY, password TEXT)");
-        db.execSQL("CREATE TABLE user (username TEXT PRIMARY KEY, password TEXT)");
+        db.execSQL("CREATE TABLE user (username TEXT PRIMARY KEY, password TEXT, user_id TEXT)");
         db.execSQL("CREATE TABLE equipment (id TEXT PRIMARY KEY, name TEXT)");
-        db.execSQL("CREATE TABLE issued (username TEXT, equipment_id TEXT, issue_date TEXT)");
+        db.execSQL("CREATE TABLE issued (username TEXT, user_id TEXT, equipment_id TEXT, issue_date TEXT)");
     }
 
     @Override
@@ -52,6 +56,20 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    // Get user ID
+    public String getUserId(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT user_id FROM user WHERE username=?", new String[]{username});
+        if (cursor.moveToFirst()) {
+            @SuppressLint("Range") String userId = cursor.getString(cursor.getColumnIndex("user_id"));
+            cursor.close();
+            return userId;
+        } else {
+            cursor.close();
+            return null;
+        }
+    }
+
     // Add admin
     public boolean addAdmin(String username, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -63,12 +81,15 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // Add user
-    public boolean addUser(String username, String password) {
+    @SuppressLint("RestrictedApi")
+    public boolean addUser(String username, String password, String userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("username", username);
         values.put("password", password);
+        values.put("user_id", userId);
         long result = db.insert("user", null, values);
+        Log.d(TAG, "addUser: result = " + result); // Logging the result
         return result != -1;
     }
 
@@ -83,41 +104,39 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // Issue equipment
-// Issue equipment
-    public boolean issueEquipment(String username, String equipmentId) {
+    public boolean issueEquipment(String username, String userId, String equipmentId ) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("username", username);
+        values.put("user_id", userId);
         values.put("equipment_id", equipmentId);
-        values.put("issue_date", System.currentTimeMillis()); // Adjusted to include issue date
+        values.put("issue_date", System.currentTimeMillis());
         long result = db.insert("issued", null, values);
         return result != -1;
     }
 
-
-    // Get issued equipment with usernames from user table
+    // Get issued equipment with usernames and user IDs from user table
+    @SuppressLint("Range")
     public List<IssuedEquipment> getIssuedEquipments() {
         List<IssuedEquipment> issuedEquipments = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT u.username, i.equipment_id, i.issue_date " +
+        Cursor cursor = db.rawQuery("SELECT u.username, u.user_id, i.equipment_id, i.issue_date " +
                 "FROM issued i " +
                 "INNER JOIN user u ON i.username = u.username", null);
         if (cursor.moveToFirst()) {
             do {
                 String username = cursor.getString(cursor.getColumnIndex("username"));
+                String userId = cursor.getString(cursor.getColumnIndex("user_id"));
                 String equipmentId = cursor.getString(cursor.getColumnIndex("equipment_id"));
                 String issueDate = cursor.getString(cursor.getColumnIndex("issue_date"));
 
-                IssuedEquipment equipment = new IssuedEquipment(username, equipmentId, issueDate);
+                IssuedEquipment equipment = new IssuedEquipment(username, userId, equipmentId, issueDate);
                 issuedEquipments.add(equipment);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return issuedEquipments;
     }
-
-
-
 
     // Get available equipment
     @SuppressLint("Range")

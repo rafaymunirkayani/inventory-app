@@ -1,3 +1,4 @@
+// IssuedEquipmentAdapter.java
 package inventoryapp;
 
 import android.content.Context;
@@ -45,6 +46,7 @@ public class IssuedEquipmentAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.issued_equipment_item, parent, false);
             holder = new ViewHolder();
             holder.usernameTextView = convertView.findViewById(R.id.usernameTextView);
+            holder.userIdTextView = convertView.findViewById(R.id.userIdTextView);
             holder.equipmentIdTextView = convertView.findViewById(R.id.equipmentIdTextView);
             holder.issueDateTextView = convertView.findViewById(R.id.issueDateTextView);
             convertView.setTag(holder);
@@ -55,6 +57,7 @@ public class IssuedEquipmentAdapter extends BaseAdapter {
         IssuedEquipment issuedEquipment = issuedEquipments.get(position);
 
         holder.usernameTextView.setText("User: " + issuedEquipment.getUsername());
+        holder.userIdTextView.setText("User ID: " + issuedEquipment.getUserId());
         holder.equipmentIdTextView.setText("Equipment ID: " + issuedEquipment.getEquipmentId());
 
         // Convert issueDate from timestamp to readable format
@@ -67,6 +70,7 @@ public class IssuedEquipmentAdapter extends BaseAdapter {
 
     static class ViewHolder {
         TextView usernameTextView;
+        TextView userIdTextView;
         TextView equipmentIdTextView;
         TextView issueDateTextView;
     }
